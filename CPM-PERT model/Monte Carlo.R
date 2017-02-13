@@ -16,8 +16,10 @@ hist(A)
 #Histogram, ki ga dobimo v tem primeru ima obliko normalne porazdelitve 
 
 B<-c()
-for (i in 1:500){
-  D<-runif(18,0,20)
+for (i in 1:1000){
+  D<-rnorm(18,20,15)
+  i<-min(D)
+  D<-D+i
   B<-c(B,trajanje(Opr,Pred,D))
 }
 
@@ -25,3 +27,4 @@ E1<-mean(B)
 V1<-var(B)
 
 hist(B)
+
