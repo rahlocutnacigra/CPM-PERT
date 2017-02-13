@@ -14,4 +14,3 @@ for (i in 1:2000){
   B<-c(B,trajanje(Opr,Pred,D))
 }
 plot(B)
-
