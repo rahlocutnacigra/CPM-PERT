@@ -33,9 +33,11 @@ for (j in 1:100){
   R<-c(R, var(A1)) #vektor R je vektor vseh varianc trajanja projekta
   O<-c(O,j) #vektor števil od 1 do 100
 }
-Pl1<-plot(O/2,P) #odvisnost od pričakovane vrednosti trajanja naloge in pričakovane vrednosti trajanja projekta
-Pl2<-plot((O^2)/12,R) #odvisnost variance trajanja posamezne naloge in variance trajanja projekta
-plot(R)
+plot(O/2,P) #odvisnost od pričakovane vrednosti trajanja naloge in pričakovane vrednosti trajanja projekta
+plot((O^2)/12,R) #odvisnost variance trajanja posamezne naloge in variance trajanja projekta
+#Ti dve odvisnosti sta linearni, kar se vidi pri valikem številu ponovitev. Ker je to precej 
+#časovno zahtevno, je bil poskus s 1000 simulacijami na vsakoem koraku ponovljen le enkrat, je pa
+#veliko bolj očitno prikazal linearnost
 
 #V naslednjem delu je čas opravljanja posamezne naloge porazdeljen okrnjeno normalno
 B<-c()
@@ -81,10 +83,10 @@ hist(M)
 O1<-c()
 P1<-c()
 R1<-c()
-for(j in 1:100){
+for(j in seq(0.1,10,0.1)){
   M1<-c()
   for (i in 1:100){
-    N1<-rexp(18,rate=i)
+    N1<-rexp(18,rate=j)
     M1<-c(M1,trajanje(Opr,Pred,N1))
   }
   P1<-c(P1,mean(M1))
@@ -93,3 +95,4 @@ for(j in 1:100){
 }
 plot(1/O1,P1)#odvisnost pričakovane vrednosti trajanja projekta od pričakovanega trajanja opravil
 plot(1/O1^2,R1)#odvisnost varianc pri eksponentni porazdelitvi
+#Pri eksponentni porazdelitvi vidimo, da sta upanji in varianci med seboj linearno odvisni.
