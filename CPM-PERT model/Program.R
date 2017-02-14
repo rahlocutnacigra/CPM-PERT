@@ -3,7 +3,7 @@
 #Cas<-c(5,3,4,9,12,3,1,7,5,1,3,6)
 Opr<-(1:18)
 Pred<-list(c(0),c(1),c(2),c(3),c(4,17),c(5),c(6),c(6),c(2,10),c(1),c(10),c(11),c(12,17),c(13),c(11),c(15,3),c(9,15,16),c(5,13))
-Cas<-c(5,3,4,9,12,3,1,7,5,1,3,6,5,3,4,9,12,3)
+#Cas<-c(5,3,4,9,12,3,1,7,5,1,3,6,5,3,4,9,12,3)
 #Funkcija Adj sestavi matriko sosednosti, če imamo podan vektor opravil in seznam sosedov
 Adj<-function(Opr, Pred){
   z=length(Opr)+1
