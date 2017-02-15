@@ -4,16 +4,9 @@ install.packages("msm")
 library(msm)
 #Če je čas slučajna spremenljivka, porazdeljena enakomerno zvezno na intervalu [1,20], je 
 #pričakovana vrednost časa posameznega opravila enaka 10, varianca pa je enaka 100/3
-
-A<-c()
-for (i in 1:1000){
-  C<-runif(18,0,20)
-  A<-c(A,trajanje(Opr,Pred,C))
-}
+A <- sapply(1:1000, function(i) trajanje(Opr,Pred,runif(18,0,20)))
 #S poskusom za 20000 ponovitev (precej dolgotrajen), sem za pričakovano vrednost dobila 96.854096,
 #za varianco pa 227.17752
-E<-mean(A)
-V<-var(A)
 hist(A)
 #Histogram, ki ga dobimo v tem primeru ima obliko normalne porazdelitve, 
 
@@ -24,32 +17,21 @@ O<-c()
 P<-c()
 R<-c()
 for (j in 1:100){
-  A1<-c()
-  for (i in 1:100){
-    C1<-runif(18,0,j)
-    A1<-c(A1,trajanje(Opr,Pred,C1))
-  }
+  A1 <- sapply(1:100, function(i) trajanje(Opr,Pred,runif(18,0,j)))
   P<-c(P,mean(A1)) #vektor P je vektor vseh pričakovanih vrednosti trajanja projekta
   R<-c(R, var(A1)) #vektor R je vektor vseh varianc trajanja projekta
   O<-c(O,j) #vektor števil od 1 do 100
 }
 plot(O/2,P) #odvisnost od pričakovane vrednosti trajanja naloge in pričakovane vrednosti trajanja projekta
-plot((O^2)/12,P) #odvisnost variance trajanja posamezne naloge in variance trajanja projekta
-#Ti dve odvisnosti sta linearni, kar se vidi pri valikem številu ponovitev. Ker je to precej 
-#časovno zahtevno, je bil poskus s 1000 simulacijami na vsakoem koraku ponovljen le enkrat, je pa
-#veliko bolj očitno prikazal linearnost
+plot((O^2)/12,R)#odvisnost variance trajanja posameznega opravila in variance trajanja projekta
+plot((O^2)/12,P) #odvisnost variance trajanja posamezne naloge in pričakovanega trajanja projekta
+
 
 #V naslednjem delu je čas opravljanja posamezne naloge porazdeljen okrnjeno normalno
-B<-c()
-for (i in 1:1000){
-  D<-rtnorm(18, 50, 10, lower = 0, upper = 200)
-  B<-c(B,trajanje(Opr,Pred,D))
-}
 
-E1<-mean(B)
-V1<-var(B)
+B <- sapply(1:1000, function(i) trajanje(Opr,Pred,rtnorm(18,50, 10, lower = 0, upper = 200)))
 hist(B)
-hist(D)
+
 #Vidimo, da porazdelitev trajanja tudi v tem primeru spominja na normalno porazdelitev. Verjetno
 #bi z vedno večjim številom poskusov dobili vedno "bolj normalno" porazdelitev
 
@@ -57,44 +39,93 @@ O2<-c()
 P2<-c()
 R2<-c()
 for(j in 1:100){
-  B1<-c()
-  for (i in 1:100){
-    D1<-rtnorm(18, 50, j, lower = 0, upper = 100)
-    B1<-c(B1,trajanje(Opr,Pred,D1))
-  }
+  B1 <- sapply(1:1000, function(i) trajanje(Opr,Pred,rtnorm(18,50, j, lower = 0, upper = 200)))
   P2<-c(P2,mean(B1))
   R2<-c(R2, var(B1))
   O2<-c(O2,j)
 }
-hist(P2) #histogram nam pokaže, da je v največ primerih pričakovana vednost trajanja projekta med
-#345 in 355, porazdelitve pa ne prepoznam kot točno določene
+
 plot(O2,P2)#odvisnost med varianco trajanja posameznih opravil in varanco trajanja projekta
+plot(O2,R2)#odvisnost med obema variancama
 
 #Eksponentna porazdelitev posameznih opravil
-M<-c()
-for (i in 1:1000){
-  N<-rexp(18,rate=1)
-  M<-c(M,trajanje(Opr,Pred,N))
-}
-hist(M)
+C <- sapply(1:1000, function(i) trajanje(Opr,Pred,rexp(18, rate =1)))
+hist(C)
 #pri eksponentni porazdelitvi trajanja opravil spet ugotovimo, da je porazdelitev slučajne 
 #spremenljivke trajanja projekta podobna normalni
 
+#najprej izvedemo simulacijo za lambda < 1
 O1<-c()
 P1<-c()
 R1<-c()
 for(j in seq(0.1,1,0.01)){
-  M1<-c()
-  for (i in 1:100){
-    N1<-rexp(18,rate=j)
-    M1<-c(M1,trajanje(Opr,Pred,N1))
-  }
-  P1<-c(P1,mean(M1))
-  R1<-c(R1, var(M1))
+  C1 <- sapply(1:100, function(i) trajanje(Opr,Pred,rexp(18, rate =j)))
+  P1<-c(P1,mean(C1))
+  R1<-c(R1, var(C1))
   O1<-c(O1,j)
 }
 plot(1/O1,P1)#odvisnost pričakovane vrednosti trajanja projekta od pričakovanega trajanja opravil
-plot(1/O1^2,P1)#odvisnost varianc pri eksponentni porazdelitvi
-#Pri eksponentni porazdelitvi vidimo, da sta obe upanji in obe varianci med seboj linearno odvisni.
-#Z naraščajočo varianco in naraščajočim upanje (torej padaočim parametrom), tudi čas trajanja
-#projekta narašča in sicer logaritemsko (korensko??)
+plot(1/O1^2,R1)#odvisnost varianc pri eksponentni porazdelitvi
+plot(1/O1^2,P1)#odvisnost pričakovanega trajanja projekta od variance trajanja posameznih opravil
+
+#za lambda > 1
+O3<-c()
+P3<-c()
+R3<-c()
+for(j in seq(1,10,0.1)){
+  C2 <- sapply(1:100, function(i) trajanje(Opr,Pred,rexp(18, rate =j)))
+  P3<-c(P3,mean(C2))
+  R3<-c(R3, var(C2))
+  O3<-c(O3,j)
+}
+plot(1/O3,P3)#odvisnost pričakovane vrednosti trajanja projekta od pričakovane vrednosti trajanja opravil
+plot(1/O3^2,P3)#odvisnost pričakovane vrednosti trajanja projekta od variance trajanja posameunih opravil
+plot(1/O3^2,R3)#odvisnost varianc
+
+#Porazdelitev hi-kvadrat 
+D<-sapply(1:1000, function(i) trajanje(Opr,Pred,rchisq(18, 1)))
+hist(D)
+
+O4<-c()
+P4<-c()
+R4<-c()
+for(j in 1:100){
+  D1 <- sapply(1:100, function(i) trajanje(Opr,Pred,rchisq(18, j)))
+  P4<-c(P4,mean(D1))
+  R4<-c(R4, var(D1))
+  O4<-c(O4,j)
+}
+plot(O4,P4)#odvisnost obeh pričakovanih vrednosti
+plot(2*O4,P4)#odvisnost pričakovane vrednosti trajanja projekta od variance trajanja opravil
+plot(2*O4,R4)#odvisnost varianc
+
+#Gamma porazdelitev
+G<-sapply(1:1000, function(i) trajanje(Opr,Pred,rgamma(18, 1,2)))
+hist(G)
+
+#spreminjamo parameter shape
+OG<-c()
+PG<-c()
+RG<-c()
+for(j in 1:100){
+  G1 <- sapply(1:100, function(i) trajanje(Opr,Pred,rgamma(18, 3, j)))
+  PG<-c(PG,mean(G1))
+  RG<-c(RG, var(G1))
+  OG<-c(OG,j)
+}
+plot(3/OG,PG)
+plot(3/OG^2,PG)
+
+#spreminajmo parameter "scale"
+OG1<-c()
+PG1<-c()
+RG1<-c()
+for(j in 1:100){
+  G2 <- sapply(1:100, function(i) trajanje(Opr,Pred,rgamma(18, j, 2)))
+  PG1<-c(PG1,mean(G2))
+  RG1<-c(RG1, var(G2))
+  OG1<-c(OG1,j)
+}
+plot(OG1/2,PG1)
+plot(OG1/4,PG1)
+
