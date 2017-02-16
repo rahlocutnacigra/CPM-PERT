@@ -129,3 +129,152 @@ for(j in 1:100){
 plot(OG1/2,PG1)
 plot(OG1/4,PG1)
 
+               
+###############################################################################################################
+
+require("truncnorm")
+
+simul1 <- function(cas, sd, p) {
+        sluc <- vector(length = length(cas))
+        i <- 1
+        for(c in cas){
+                sluc[i] <- rtruncnorm(1, c * p, mean = c, sd = sd)
+                i <- i+1
+        }
+        return(sluc)
+}
+
+simul2 <- function(cas, m) {
+        if(m>2 | m < 0) {return(FALSE)}
+        sluc <- vector(length = length(cas))
+        n <- max(m, 2-m )
+        m <- min(m, 2-m)
+        i <- 1
+        for(c in cas){
+                sluc[i] <- runif(1, min = m*c, max = n * c)
+                i <- i+1
+        }
+        return(sluc)
+}
+
+# naslednje opravilo lahko začnemo komaj naslednji dan
+
+simul21 <- function(cas, m) {
+        if(m>2 | m < 0) {return(FALSE)}
+        sluc <- vector(length = length(cas))
+        n <- max(m, 2-m)
+        m <- min(m, 2-m)
+        i <- 1
+        for(c in cas){
+                sluc[i] <- ceiling(runif(1, min = m*c, max = n * c))
+                i <- i+1
+        }
+        return(sluc)
+}
+
+#simulacija
+
+sim <- replicate(1000, trajanje(Opr, Pred, simul1(Cas, 1, 0.9))) 
+u <- mean(sim) 
+s <- sd(sim)
+
+#histogram 
+
+hist(sim, breaks =20, xlab = "Trajanje v dnevih", 
+     ylab = "Frekvenca", main = "Trajanje projekta, normalno porazdeljeno")
+abline(v = u, col = "blue", lwd = 2)
+arrows(u, 0, x1 = u-s, y1 = 0, length = 0.25, angle = 30,
+       code = 2, col = "red", lwd = 2)
+arrows(u, 0, x1 = u+s, y1 = 0, length = 0.25, angle = 30,
+       code = 2, col = "red", lwd = 2)
+
+
+
+# spreminjanje sd opravil pri normalni
+
+std <- seq(0, 3, by = 0.05)
+pon <- 1000
+A <- matrix(ncol = pon, nrow = length(std))
+
+for(c in 1:ncol(A)) {
+        i <- 1
+        for(s in std){
+                A[i, c] <- trajanje(Opr, Pred, simul1(Cas, s, 0.9))
+                i<- i+1
+        }
+}
+
+# spreminjanje sd opravil pri normalni
+
+std <- seq(0, 3, by = 0.1)
+pon <- 100
+A <- matrix(ncol = pon, nrow = length(std))
+
+for(c in 1:ncol(A)) {
+        i <- 1
+        for(s in std){
+                A[i, c] <- trajanje(Opr, Pred, simul1(Cas, s, 0.9))
+                i<- i+1
+        }
+}
+
+# Povezava med standardnim odklonom opravil in povprečnega trajanja projekta
+
+plot(std, rowMeans(A), col = "black", bg = "red", pch =21,
+     main ="Povezava med standardnim odklonom opravil in trajanjem projekta", 
+     xlab = "Standardni odklon", ylab = "Trajanje projekta")
+
+# spreminjanje sd opravil pri normalni
+#matrika z več ponovitvami(po stolpcih) pri različnih standardnih odklonih(po vrsticah)
+
+std <- seq(0, 3, by = 0.05)
+pon <- 1000
+A <- matrix(ncol = pon, nrow = length(std))
+
+for(c in 1:ncol(A)) {
+        i <- 1
+        for(s in std){
+                A[i, c] <- trajanje(Opr, Pred, simul1(Cas, s, 0.9))
+                i<- i+1
+        }
+}
+
+
+# spreminjanje intervala pri EZ
+
+#matrika z več ponovitvami(po stolpcih) pri različnih intervalih(po vrsticah)
+
+a <- seq(1, 0, by = -0.01)
+pon <- 100
+B <- matrix(ncol = pon, nrow = length(a))
+
+for(c in 1:ncol(B)) {
+        i <- 1
+        for(s in a){
+                B[i, c] <- trajanje(Opr, Pred, simul2(Cas, s))
+                i<- i+1
+        }
+}
+
+# spreminjanje sd opravil pri normalni
+#matrika z več ponovitvami(po stolpcih) pri različnih standardnih odklonih(po vrsticah)
+
+plot(seq(0, 2, by = 0.02), rowMeans(B), col = "black", bg = "red", pch =21,
+     main ="Povezava med dolžino časovnega intervala opravljanja opravil in trajanjem projekta", 
+     xlab = "Dolžina intervala (*Čas)", ylab = "Trajanje projekta")
+
+
+# BINOMSKA, diskretni časi trajanja opravil
+
+simul3 <- function(cas, p) {
+        sluc <- vector(length = length(cas))
+        i <- 1
+        for(c in cas){
+                n <- round(c/p)
+                sluc[i] <- max(rbinom(1, n, p), round(0.8*c)) # opravilo najhitreje opravimo v pribl. 80% predvidenega časa
+                i <- i+1
+        }
+        return(sluc)
+}
+
+               
