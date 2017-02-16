@@ -301,7 +301,7 @@ simul3 <- function(cas, n) {
 }
 
 #simulacija
-sim <- replicate(1000, trajanje(Opr, Pred, simul3(Cas, 0.6)))
+sim <- replicate(1000, trajanje(Opr, Pred, simul3(Cas, 25)))
 u <- mean(sim) 
 s <- sd(sim)
 
