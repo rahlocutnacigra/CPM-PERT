@@ -132,6 +132,12 @@ plot(OG1/4,PG1)
                
 ###############################################################################################################
 
+
+
+# Opr<-(1:18)
+# Pred<-list(c(0),c(1),c(2),c(3),c(4,17),c(5),c(6),c(6),c(2,10),c(1),c(10),c(11),c(12,17),c(13),c(11),c(15,3),c(9,15,16),c(5,13))
+# Cas<-c(5,3,4,9,12,3,1,7,5,1,3,6,5,3,4,9,12,3)
+
 require("truncnorm")
 
 ####################################################################
@@ -147,17 +153,19 @@ simul1 <- function(cas, sd, p) {
 }
 
 #simulacija
-sim <- replicate(1000, trajanje(Opr, Pred, simul1(Cas, 1, 0.9)))
-u <- mean(sim) 
-s <- sd(sim)
+sim1 <- replicate(10000, trajanje(Opr, Pred, simul1(Cas, 1, 0.7)))
+u1 <- mean(sim1) 
+s1 <- sd(sim1)
+mi1 <- min(sim1)
+ma1 <- max(sim1)
 
 #histogram
-hist(sim, breaks =20, xlab = "Trajanje v dnevih", 
+hist(sim1, breaks =20, xlab = "Trajanje v dnevih", 
      ylab = "Frekvenca", main = "Trajanje projekta")
-abline(v = u, col = "blue", lwd = 2)
-arrows(u, 0, x1 = u-s, y1 = 0, length = 0.25, angle = 30,
+abline(v = u1, col = "blue", lwd = 2)
+arrows(u1, 0, x1 = u1-s1, y1 = 0, length = 0.25, angle = 30,
        code = 2, col = "red", lwd = 2)
-arrows(u, 0, x1 = u+s, y1 = 0, length = 0.25, angle = 30,
+arrows(u1, 0, x1 = u1+s1, y1 = 0, length = 0.25, angle = 30,
        code = 2, col = "red", lwd = 2)
 
 # spreminjanje sd opravil
@@ -170,7 +178,7 @@ A <- matrix(ncol = pon, nrow = length(std))
 for(c in 1:ncol(A)) {
         i <- 1
         for(s in std){
-                A[i, c] <- trajanje(Opr, Pred, simul1(Cas, s, 0.9))
+                A[i, c] <- trajanje(Opr, Pred, simul1(Cas, s, 0.8))
                 i<- i+1
         }
 }
@@ -188,7 +196,7 @@ plot(std, rowMeans(A), col = "black", bg = "red", pch =21,
 simul2 <- function(cas, m) {
         if(m>2 | m < 0) {return(FALSE)}
         sluc <- vector(length = length(cas))
-        n <- max(m, 2-m )
+        n <- max(m, 2-m)
         m <- min(m, 2-m)
         i <- 1
         for(c in cas){
@@ -199,30 +207,32 @@ simul2 <- function(cas, m) {
 }
 
 #simulacija
-sim <- replicate(1000, trajanje(Opr, Pred, simul2(Cas, 0.5)))
-u <- mean(sim) 
-s <- sd(sim)
+sim2 <- replicate(10000, trajanje(Opr, Pred, simul2(Cas, 0.5)))
+u2 <- mean(sim2) 
+s2 <- sd(sim2)
+mi2 <- min(sim2)
+ma2 <- max(sim2)
 
 #histogram
-hist(sim, breaks =20, xlab = "Trajanje v dnevih", 
+hist(sim2, breaks =20, xlab = "Trajanje v dnevih", 
      ylab = "Frekvenca", main = "Trajanje projekta")
-abline(v = u, col = "blue", lwd = 2)
-arrows(u, 0, x1 = u-s, y1 = 0, length = 0.25, angle = 30,
+abline(v = u2, col = "blue", lwd = 2)
+arrows(u2, 0, x1 = u2-s2, y1 = 0, length = 0.25, angle = 30,
        code = 2, col = "red", lwd = 2)
-arrows(u, 0, x1 = u+s, y1 = 0, length = 0.25, angle = 30,
+arrows(u2, 0, x1 = u2+s2, y1 = 0, length = 0.25, angle = 30,
        code = 2, col = "red", lwd = 2)
 
 # spreminjanje intervala pri EZ
 
 #matrika z več ponovitvami(po stolpcih) pri različnih intervalih(po vrsticah)
 
-a <- seq(1, 0, by = -0.01)
+a2 <- seq(1, 0, by = -0.02)
 pon <- 100
-B <- matrix(ncol = pon, nrow = length(a))
+B <- matrix(ncol = pon, nrow = length(a2))
 
 for(c in 1:ncol(B)) {
         i <- 1
-        for(s in a){
+        for(s in a2){
                 B[i, c] <- trajanje(Opr, Pred, simul2(Cas, s))
                 i<- i+1
         }
@@ -231,14 +241,22 @@ for(c in 1:ncol(B)) {
 
 #matrika z več ponovitvami(po stolpcih) pri različnih standardnih odklonih(po vrsticah)
 
-plot(seq(0, 2, by = 0.02), rowMeans(B), col = "black", bg = "red", pch =21,
+plot(seq(0, 1, by = 0.02), rowMeans(B), col = "black", bg = "red", pch =21,
      main ="Povezava med standardnim odklonom opravil in trajanjem projekta", 
      xlab = "Smer naraščanja standardnega odklona", ylab = "Trajanje projekta")
 
 
 
 ####################################################################
-# Enakomerno zvezna, naslednje opravilo lahko začnemo šele naslednji dan (diskretna)
+# Enakomerno zvezna, naslednje opravilo lahko začnemo šele naslednji dan 
+
+# Najdemo opravila ki so predhodniki 
+ip <- c()
+for(a in 1:(length(Opr)-1)) {
+        for(b in 1:length(Pred)){
+                if(a %in% Pred[[b]] && !(a %in% ip)) {ip <- c(ip, a)}
+        }
+}
 
 simul21 <- function(cas, m) {
         if(m>2 | m < 0) {return(FALSE)}
@@ -247,45 +265,31 @@ simul21 <- function(cas, m) {
         m <- min(m, 2-m)
         i <- 1
         for(c in cas){
-                sluc[i] <- ceiling(runif(1, min = m*c, max = n * c))
+                sluc[i] <- if(i %in% ip) {ceiling(runif(1, min = m*c, max = n * c))}else{runif(1, min = m*c, max = n * c)}
                 i <- i+1
         }
         return(sluc)
 }
 
 #simulacija
-sim <- replicate(1000, trajanje(Opr, Pred, simul21(Cas, 0.5)))
-u <- mean(sim) 
-s <- sd(sim)
+sim21 <- replicate(10000, trajanje(Opr, Pred, simul21(Cas, 0.5)))
+u21 <- mean(sim21) 
+s21 <- sd(sim21)
+mi21 <- min(sim21)
+ma21 <- max(sim21)
 
 #histogram
-hist(sim, breaks =20, xlab = "Trajanje v dnevih", 
+hist(sim21, breaks =20, xlab = "Trajanje v dnevih", 
      ylab = "Frekvenca", main = "Trajanje projekta")
-abline(v = u, col = "blue", lwd = 2)
-arrows(u, 0, x1 = u-s, y1 = 0, length = 0.25, angle = 30,
+abline(v = u21, col = "blue", lwd = 2)
+arrows(u21, 0, x1 = u21-s21, y1 = 0, length = 0.25, angle = 30,
        code = 2, col = "red", lwd = 2)
-arrows(u, 0, x1 = u+s, y1 = 0, length = 0.25, angle = 30,
+arrows(u21, 0, x1 = u21+s21, y1 = 0, length = 0.25, angle = 30,
        code = 2, col = "red", lwd = 2)
 
 
 #matrika z več ponovitvami(po stolpcih) pri različnih intervalih(po vrsticah)
-
-a <- seq(1, 0, by = -0.01)
-pon <- 100
-C <- matrix(ncol = pon, nrow = length(a))
-
-for(c in 1:ncol(C)) {
-        i <- 1
-        for(s in a){
-                C[i, c] <- trajanje(Opr, Pred, simul21(Cas, s))
-                i<- i+1
-        }
-}
-
-
-plot(seq(0, 2, by = 0.02), rowMeans(C), col = "black", bg = "red", pch =21,
-     main ="Povezava med standardnim odklonom opravil in trajanjem projekta", 
-     xlab = "Smer naraščanja standardnega odklona", ylab = "Trajanje projekta")
+w
 
 ####################################################################
 # BINOMSKA, diskretni časi trajanja opravil
@@ -294,43 +298,57 @@ simul3 <- function(cas, n) {
         sluc <- vector(length = length(cas))
         i <- 1
         for(c in cas){
-                sluc[i] <- max(rbinom(1, n, c/n), round(0.8*c)) # opravilo najhitreje opravimo v pribl. 80% predvidenega časa
+                p <- c / n
+                sluc[i] <- max(rbinom(1, n, p), round(0.7*c)) # opravilo najhitreje opravimo v pribl. 80% predvidenega časa
                 i <- i+1
         }
         return(sluc)
 }
 
 #simulacija
-sim <- replicate(1000, trajanje(Opr, Pred, simul3(Cas, 25)))
-u <- mean(sim) 
-s <- sd(sim)
+sim3 <- replicate(10000, trajanje(Opr, Pred, simul3(Cas, 25)))
+u3 <- mean(sim3) 
+s3 <- sd(sim3)
+mi3 <- min(sim3)
+ma3 <- max(sim3)
+
 
 #histogram
-hist(sim, breaks =20, xlab = "Trajanje v dnevih", 
+hist(sim3, breaks =20, xlab = "Trajanje v dnevih", 
      ylab = "Frekvenca", main = "Trajanje projekta")
-abline(v = u, col = "blue", lwd = 2)
-arrows(u, 0, x1 = u-s, y1 = 0, length = 0.25, angle = 30,
+abline(v = u3, col = "blue", lwd = 2)
+arrows(u3, 0, x1 = u3-s3, y1 = 0, length = 0.25, angle = 30,
        code = 2, col = "red", lwd = 2)
-arrows(u, 0, x1 = u+s, y1 = 0, length = 0.25, angle = 30,
+arrows(u3, 0, x1 = u3+s3, y1 = 0, length = 0.25, angle = 30,
        code = 2, col = "red", lwd = 2)
 
 
-#matrika z več ponovitvami(po stolpcih) pri različnih intervalih(po vrsticah)
+# #matrika z več ponovitvami(po stolpcih) pri različnih intervalih(po vrsticah)
+# 
+# a3 <- seq((max(Cas)+1), 50, by = 1)
+# pon <- 100
+# D <- matrix(ncol = pon, nrow = length(a3))
+# 
+# for(c in 1:ncol(D)) {
+#         i <- 1
+#         for(s in a3){
+#                 D[i, c] <- trajanje(Opr, Pred, simul3(Cas, s))
+#                 i<- i+1
+#         }
+# }
+# 
+# 
+# plot(seq((max(Cas)+1), 50, by = 1), rowMeans(D), type = "l", col = "black", bg = "red", pch =21,
+#      main ="Povezava med standardnim odklonom opravil in trajanjem projekta", 
+#      xlab = "n (Smer naraščanja standardnega odklona)", ylab = "Trajanje projekta")
+# 
 
-a <- seq(1, 50, by = 1)
-pon <- 100
-D <- matrix(ncol = pon, nrow = length(a))
-
-for(c in 1:ncol(D)) {
-        i <- 1
-        for(s in a){
-                D[i, c] <- trajanje(Opr, Pred, simul3(Cas, s))
-                i<- i+1
-        }
-}
 
 
-plot(seq(1, 50, by = 1), rowMeans(D), col = "black", bg = "red", pch =21,
-     main ="Povezava med standardnim odklonom opravil in trajanjem projekta", 
-     xlab = "n (Smer naraščanja standardnega odklona)", ylab = "Trajanje projekta")
+
+
+
+
+
+
 
