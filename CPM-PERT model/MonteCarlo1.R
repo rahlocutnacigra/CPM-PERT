@@ -14,7 +14,7 @@ O2<-c()
 P2<-c()
 R2<-c()
 for(j in 1:100){
-  B1 <- sapply(1:1000, function(i) trajanje(Opr,Pred,rtnorm(18,50, j, lower = 0, upper = 200)))
+  B1 <- sapply(1:100, function(i) trajanje(Opr,Pred,rtnorm(18,50, j, lower = 0, upper = 200)))
   P2<-c(P2,mean(B1))
   R2<-c(R2, var(B1))
   O2<-c(O2,j)
