@@ -1,6 +1,6 @@
-source("CPM-PERT model/Program.R",encoding="UTF-8")
-#source("U:/OR/CPM-PERT/CPM-PERT model/Program.R", encoding="UTF-8")
-install.packages("msm")
+#source("CPM-PERT model/Program.R",encoding="UTF-8")
+source("U:/OR/CPM-PERT/CPM-PERT model/Program.R", encoding="UTF-8")
+#install.packages("msm")
 library(msm)
 #Če je čas slučajna spremenljivka, porazdeljena enakomerno zvezno na intervalu [1,20], je 
 #pričakovana vrednost časa posameznega opravila enaka 10, varianca pa je enaka 100/3
