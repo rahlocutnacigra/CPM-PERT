@@ -1,0 +1,290 @@
+---
+title: "Poročilo"
+author: "Manca Cör in Andrej Sokolič"
+date: "15 februar 2017"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r uvoz, echo=FALSE, include=FALSE, warning=FALSE}
+source("U:/OR/CPM-PERT/CPM-PERT model/Monte Carlo.R", encoding="UTF-8")
+source("U:/OR/CPM-PERT/CPM-PERT model/MonteCarlo1.R", encoding="UTF-8")
+source("U:/OR/CPM-PERT/CPM-PERT model/MonteCarlo2.R", encoding="UTF-8")
+source("U:/OR/CPM-PERT/CPM-PERT model/MonteCarlo3.R", encoding="UTF-8")
+source("U:/OR/CPM-PERT/CPM-PERT model/MonteCarlo4.R", encoding="UTF-8")
+```
+
+
+## CPM-PERT model
+
+V svojem projektu sva se ukvarjala s CPM-PERT modelom, s pomočjo katerega izračunamo najkrajše možno trajanje celotnega projekta, če imamo podan vektor opravil, seznam predhodnikov za vsako opravilo in čas trajanja vsakega opravila.
+
+Pri najinem programu sva predvidela, da je seznam opravil vektor števil od 1 do *n*, če imamo *n* opravil, prav tako je tudi čas trajanja opravil podan kot vektor, kjer je na *i*-tem mestu v vektorju čas trajanja opravila *i*. 
+Predhodna opravila so podana v objektu `list`, kjer je na *i*-tem mestu vektor števil, ki pripadajo predhodnim opravilom opravila *i*. Če to opravilo nima predhodnika je na *i*-tem mestu `c(0)`.
+
+Najprej si podatke predstavljajmo v obliki grafa, kjer je vsako opravilo vozlišče. V vozlišče *v* gredo povezave iz predhodnih vozlišč *v*-ja, iz njega pa gredo povezave v vozlišča za katere je *V* pogoj. Dodamo še vozlišči *s* (start) in *k* (konec). Vozlišče *s* nima predhodnikov, iz njega pa gredo povezave v vsa vozlišča brez predhodnikov. Po drugi strani ima *k* le vhodne povezave in sicer iz vseh vozlišč, ki niso predhodniki nobenemu dugemu vozlišču. 
+
+Za ta graf nato izdelamo matriko sosednosti z najino prvo funkcijo Adj, v kateri sta vhodna podatka vektor opravil *Opr* in seznam sosedov *Pred*. Njena psevdokoda izgleda takole: 
+
+```{r, tidy=FALSE, eval=FALSE, highlight=FALSE }
+
+z<-length(Opr)+1
+NO<-c(0, Opr,z) #dodamo opravili "začetek" in "konec"
+A<-matrika velikost (z+1)*(z+1)
+O<-Opr #za vse sosede vozlišča na ustrezna mesta v matriki napišemo enice:
+for i in Opr:
+  p<-Pred[i]
+  for j in p:
+    A[j+1,i+1]<-1 #če je j pogoj za opravljanje opravila i, potem v matriki na mestu (j+1,i+1) napišemo enico (mesto je na indeksu (j+1,i+1), ker se številčenje opravil začne z nič)
+    O[!O %in% p] 
+     
+#na mesta kjer ni enice napišemo 0:
+for i,j od 1 do z+1:
+  if is.na(A[i,j])
+      A[i,j]<-0
+
+ #opravila, ki niso pogoj za nobeno drugo opravilo "povežemo" z opravilom "konec" 
+ 
+for i in 1:z :
+  if sum(A[i,])==0:
+    A[i,z+1]<-1
+
+return(A)
+```
+
+Ko imamo enkrat naš graf opravil v obliki matrike, lahko na njem izvedemo topološko urejanje in tako določimo vrstni red opravljanja opravil.
+
+```{r, tidy=FALSE, eval=FALSE, highlight=FALSE }
+adj<-Adj(Opr,Pred) #matrika sosednosti
+z<-length(Opr)+1
+NO<-c(1, Opr+1,z+1) #vozlišče s ima od sedaj naprej številko 1, vsa ostala vozlišča pa se ovečajo za 1
+#določimo stopnjo vozlišč
+for v in NO:
+  st[v]<-sum(adj[,v])
+#vozlišča s stopnjo 0 dodamo v vektor Q
+for v in NO:
+  if st[v]==0:
+    Q<-c(Q,v)
+j<-0
+while j<(length(Pred)+2) 
+  for u in Q 
+    remove<-c(u) 
+    Q<-Q[!Q %in% remove] #iz vektorja Q izbrišemo obravnavamo vozlišče
+    top.ured[u]<-j # obravnavanemu opravilu dodamo zaporedno številko opravljanja
+    j<-j+1
+    s<-adj[u,] #vektor, ki nam pove za katera opravila je pogoj obravnavano opravilo u
+    #znižamo stopnjo vseh vozlišč, katerih pogoj je u, opravila katerih stopnja je 0 dodamo v Q
+    for v in 1:length(s):
+      if s[v]==1:
+        st[v]<-st[v]-1 
+        if(st[v]==0){
+          Q<-c(Q,v) 
+
+#dobimo vektor zaporednih številk opravljanja opravil
+return(top.ured)
+```
+
+To kar dobimo s topološkim urejanjem je seznam zaporednih števil opravljanja opravil, potrebujemo pa številke oprvil razporejene po vrstnem redu opravljanja, kar nam naredi funkcija vrstni.red, ki pa je zelo enostava, zato je ne bomo podrobneje opisovali.
+
+Zadnja stvar, ki nam preostane je, da sestavimo program, ki bo računal minimalno trajanje projekta. To naredimo s funkcijo trajanje, ki ji kot argumente podamo Opr, Pred (takšna kot v prejšnjih funkcijah) in nenegativen vektor Cas, ki predstavlja čas opravljanja posameznega opravila. 
+```{r, tidy=FALSE, eval=FALSE, highlight=FALSE }
+vr<-vrstni.red(top.sort(Opr,Pred))
+cas[vr[1]]<-0 #prvo opravilo lahko začnemo v času 0
+for i in 2:(length(vr)-1) #gledamo za opravila, brez končnega - končno opravilo obdelamo na koncu
+#za vsako predhodno opravilo opravila na i-tem mestu poiščemo čas, ko to opravilo lahko začnemo in mu prištejemo čas opravljanja
+  c.pred <- c(0, sapply(Pred[[vr[i]]], function(j) cas[j]+Cas[j]))
+#maksimum teh števil je minimalni čas, ko lahko začnemo opravljati opravilo z zaporedno številko i
+  cas[vr[i]]<-max(c.pred)
+
+#obravnavamo še končno opravilo. Delamo po istem postopku kot prej. Dobimo čas zaključka končnega opravila
+a<-Adj(Opr,Pred)[,length(vr)+1]
+for i in 1:length(a):
+  if a[i]==1:
+    predh<-c(predh,(i-1))
+for j in predh:
+  c1<-c(c1,cas[j]+Cas[j])
+konec<-max(c1)
+return(konec)
+```
+
+Sedaj, ko imamo funkcijo, ki nam izračuna najmanjši čas trajanja projekta, lahko začnemo s simulacijami, da vidimo kako se pričakovana vrednost trajanja projekta spreminja, če spremenimo porazdelitev slučajnega vektorja, ki nadomesti vektor Cas. 
+
+##Poskusi z metodo Monte Carlo
+Najprej smo predpostavili, da so vse slučajne spremenljivke v slučajnem vektorju enako porazdeljene. Za vsako od obravnavanih porazdelitev smo najprej naredili simulacijo s 1000 poskusi, nato pa še simulacijo s po 100 poskusi za vsak spremenjen parameter v porazdelitvi, ki je vplival na spremembo disperzije slučajnega vektorja. Najprej smo obravnavali enakomerno zvezno porazdelitev. 
+
+###Enakomerno zvezna porazdelitev
+Najprej poglejmo kako je porazdeljeno trajanje projekta, če je čas posameznega opravila porazdeljen enakomerno zvezno, z matematičnim upanjem 10 in varianco 33,33.
+
+```{r, fig.caption="Histogram porazdelitve časa trajanja projekta pri enakomerno zvezni slučajni spremenljivki",echo=FALSE}
+hist(A,main = paste("Enakomerno zvezna slučajna spremenljivka"))
+```
+
+Vidimo, da je porazdelitev spominja na normalno. Verjetno bi z večjim številom poizkusov dobili še boljši približek normalni porazdelitvi. Poglejmo sedaj kakšne so odvisnosti med variancami in matematičnimi upanji pri enakomerno zvezni porazdelitvi.
+
+```{r, fig.caption="Odvisnosti med parametri",echo=FALSE}
+plot(O/2,P, main=paste("Odvisnost med pričakovanima vrednostima"))
+```
+Vidimo, da je odvisnost med pričakovano vrednostjo trajanja posameznega opravila in pričakovano vrednostjo trajanja celotnega projekta linearna. To je povsem logično, ker so vsi časi enako porazdeljeni in če vsako opravilo podaljšamo za nek faktor, potem se celotno trajanje podaljša za enak faktor. 
+podobno velja tudi za odvisnost med variancama, kot vidimo v spodnjem grafu (pri večjem številu poskusov v vsakem koraku je linearnost še bolj očitna, a zaradi hitrosti delovanja raje uporabimo manj poskusov).
+```{r, fig.caption="Odvisnosti med parametri2",echo=FALSE}
+plot((O^2)/12,R, main=paste("Odvisnost med variancama"))
+```
+
+Sedaj pa poglejmo še, kako sprememba variance vpliva na pričakovano vrednost trajanja celotnega projekta.
+```{r, fig.caption="Odvisnosti med parametri3",echo=FALSE}
+plot((O^2)/12,P, main=paste("Odvisnost med varianco opravila in pričakovano vrednostjo projekta")) 
+
+```
+
+Graf tu spominja na korensko funkcijo oziroma na pozitivni del logaritemske funkcije. V nadaljevanju bomo ugotovili, da je večina porazdelitev takih.
+
+### Okrnjena normalna porazdelitev
+Če so vsi časi porazdeljeni okrnjeno normalno, je porazdelitev trajanja projekta spet normalna. 
+
+```{r, fig.caption="Histogram porazdelitve časa trajanja projekta pri okrnjenu normalni slučajni spremenljivki",echo=FALSE}
+hist(B,main = paste("Okrnjena normalna slučajna spremenljivka"))
+```
+
+Sedaj pa poglejmo kako se s spreminjanjem variance opravil, spreminjata matematično upanje in varianca trajanja projekta:
+```{r, fig.caption="Odvisnosti med parametri normalna 1",echo=FALSE}
+plot(O2,R2, main=paste("Odvisnost med variancama"))
+```
+Vidimo, da tukaj ne gre za linearno odvisnost ne pri odvisnosti med variancama, ne pri odvisnosti matematičnega upanja trajanja projekta od variance trajanja posameznega opravila.
+
+```{r, fig.caption="Odvisnosti med parametri3",echo=FALSE}
+plot(O2,P2, main=paste("Odvisnost med varianco opravila in pričakovano vrednostjo projekta")) 
+
+```
+
+###Eksponentna porazdelitev
+
+Pri eksponentni porazdelitvi ima trajanje projekta porazdelitev, ki je podobna okrnjeni noramlni, kar vidimo na histogramu:
+
+```{r, fig.caption="Histogram porazdelitve časa trajanja projekta pri eksponentni slučajni spremenljivki",echo=FALSE}
+hist(C,main = paste("Eksponentna slučajna spremenljivka"))
+```
+
+Če pri tej porazdelitvi analiziramo odvisnosti varianc, odvisnosti pričakovanih vrednosti in odvosnost pričakovane vrednosti trajanja projekta od varianc trajanja opravil vidimo, da je rezultat podoben kot pri enakomerno zvezni porazdelitvi: odvisnosti varianc in matematičnih upanj med sabo sta linearni, medtem ko je odvosnost upanja trajanja projekta od variance trajanja opravil, korenska funcija. 
+
+```{r, fig.caption="Odvisnosti pri eksponentni slučajni spremenljivki",echo=FALSE}
+plot(1/O1,P1, main="Odvisnost pričakovane vrednosti trajanja projekta od pričakovanega trajanja opravil")
+plot(1/O1^2,R1,main= "Odvisnost varianc pri eksponentni porazdelitvi")
+plot(1/O1^2,P1, main= "Odvisnost pričakovanega trajanja projekta od variance trajanja posameznih opravil")
+
+```
+
+###Porazdelitev Hi-kvadrat
+
+Pri porazdelitvi Hi-kvadrat porazdelitev trajanja projekta še vedno izgleda podobna okrnjeni normalni, tako kot pri prejšnjih primerih. To lahko vidimo tudi na histogramu: 
+
+
+```{r, fig.caption="Histogram porazdelitve časa trajanja projekta pri hi-kvadrat slučajni spremenljivki",echo=FALSE}
+hist(D, main = paste("Slučajna spremenljivka porazdeljena po zakonu Hi-kvadrat"))
+```
+Pri Porazdelitvi Hi-kvadrat se dobro lepo vidi linearna odvisnost med matematičnimi upanji in med variancama, vendar pa jasna zveza med varianco posameznih opravil in pričakovanjo vrednostjo trajanja celotnega projekta ni jasno vidna. 
+
+```{r, fig.caption="Odvisnosti pri hi-kvadrat spremenljivki",echo=FALSE}
+plot(O4,P4, main="Odvisnost obeh pričakovanih vrednosti")
+plot(2*O4,P4, main ="Odvisnost pričakovane vrednosti trajanja projekta od variance trajanja opravil")
+plot(2*O4,R4, main= "Odvisnost varianc")
+
+```
+
+###Porazdelitev Gama
+
+Pri gama porazdelitvi spremenljivk posameznih opravil, je celoten čas trajanja projekta spet porazdeljen okrnjeno normalno, kot v prejšnjih primerih:
+```{r, fig.caption="Histogram porazdelitve časa trajanja projekta pri gama slučajni spremenljivki",echo=FALSE}
+hist(G, main = paste("Slučajna spremenljivka porazdeljena po zakonu Gama"))
+```
+
+Ker pa ima Gama porazdelitev 2 parametra in sicer parameter oblike in parameter merila. Oba vplivata tako na pričakovano vrednost kot na varianco. Zato sva naslednjo simulacijo izvedla v dveh delih, in sicer sva najprej spreminjala parameter oblike, nato pa še parameter merila, in pri tem opazovala vpliv na pričakovano vrednost in varianco trajanja projekta.
+
+Najprej sva spreminjala parameter oblike. Kot rezultat sva dobila naslednje grafe odvisnosti:
+
+```{r, fig.caption="Odvisnosti pri gama spremenljivki",echo=FALSE}
+plot(3/OG,PG, main="Odvisnost obeh pričakovanih vrednosti")
+plot(3/OG^2,RG, main ="Odvisnost pričakovane vrednosti trajanja projekta od variance trajanja opravil")
+plot(3/OG^2,PG, main= "Odvisnost varianc")
+```
+Če spreminjamo ta parameter vidimo, da so odvisnosti povsem enake kot pri enakomerno zvezni porazdelitvi, ali pri eksponentni porazdelitvi. Varianci in matematični upanji sta linearno odvini, medtem ko je odvisnost pričakovanega trajanja projekta od variance podobna korenski funkciji.
+
+Če spreminjamo parameter merila, so vse odvisnosti linearne, saj ta parameter v formuli za varianco in matematično upanje nastopa linearno.
+
+###########################################################
+
+Sedaj pa poglejmo kaj se zgodi, če so slučajne spremenljivke trajanja opravil med seboj porazdeljene različno (zanje velja enak porazdelitveni zakon, a imajo različne parametre). Za porazdelitev časov trajanja izberemo porazdelitve: enakomerno zvezno, normalno in binomsko.
+
+Najprej definiramo determinističen vektor časov.
+Začnemo tako, da definiramo funkcijo, ki determinističnemu vektorju priredi slučajni vektor časov trajanja opravil.
+Kot argument bo funkcija sprejela determinističen vektor in različne parametre, odvisne od izbrane slučajne spremenljivke.
+Najprej definiramo prazen vektor enake dolžine kot vektor časov trajanja opravil. Nato vzamemo vsak čas iz slednjega in mu priredimo slučajno spremenljivko tako, da bo njeno matematično upanje enako prvotnemu času trajanja opravila. To slučajno spremenljivko nato zapiše v prej definiran prazen vektor in tako na koncu dobimo željeni slučajni vektor.
+
+Sedaj, ko so funkcije definirane, lahko pričnemo s simulacijo z raznimi slučajnimi spremenljivkami in njihovimi variacijami. Opazujemo kako spreminjanje parametrov in izbira slučajne spremenljivke vpliva na čas trajanja projekta ter poskusimo poiskati povezavo med standardnim odklonom slučajnih spremenljivk in časom trajanja projekta.
+
+Za vsako različno simulacijo narišemo tudi histogram z označenim matematičnim upanjem in standardnim odklonom in graf, ki prikazuje kako standardni odklon slučajnih časov trajanja vpliva na povprečno trajanje projektov. Za narisat slednjega si pomagamo z matriko, v katero po stolpcih zapišemo različne simulacije časov trajanja projekta, po vrsticah pa različne standardne odklone.
+
+Za vse simulacije uporabimo enake vektorje opravil, časov trajanja opravil in predhodnikov:
+Opr<-(1:18)
+Pred<-list(c(0),c(1),c(2),c(3),c(4,17),c(5),c(6),c(6),c(2,10),c(1),c(10),c(11),c(12,17),c(13),c(11),c(15,3),c(9,15,16),c(5,13))
+Cas<-c(5,3,4,9,12,3,1,7,5,1,3,6,5,3,4,9,12,3)
+
+
+Začnimo s premaknjeno normalno porazdelitvijo, to je normalna porazdelitev z navzgor ali navzdol omejeno zalogo vrednosti.
+
+Funkcija kot argument sprejme vektor časov trajanja, koeficient, ki omejuje najnižjo možno dosegljivo vrednost, ki jo lahko slučajna spremenljivka zasede (kot delež danega časa trajanja opravila) in standardni odklon porazdelitve.
+
+Za parametre izberemo standardno deviacijo 1, in koeficient 0.8 - za opravilo porabimo vsaj 80% predvidenega časa.
+
+Sedaj 10000-krat izračunamo čas trajanja projekta in dobimo vektor dolžine 10000.
+Matematično upanje: 58.64452
+Standardni odklon: 2.447101
+Minimum: 51.16575
+Maximum: 69.95254
+
+Sedaj pa fiksirajmo koeficient na 0.8 in spreminjajmo standardni odklon posameznih opravil od 0 do 3, s korakom 0.05.
+
+Iz grafa je razvidno da se z večanjem standardnega odklona veča tudi čas trajanja projekta, povezava med njima izgleda
+linearna.
+
+Z večanjem(manjšanjem) vrednosti koeficienta se pričakovano veča (manjša) tudi čas trajanja projekta. Standardni odklon trajanj projektov pa se (tudi pričakovano- zaradi manjše(večje) zaloge vrednosti slučajne spremenljivke) manjša (veča).
+
+
+
+Poglejmo sedaj trajanje projekta, ko so časi trajanj opravil porazdeljeni enakomerno zvezno.
+
+Funkcija kot argument sprejme vektor časov trajanja opravil, in koeficient, s katerim določimo simetričen interval s središčem v prvotnem času.
+
+Koeficient izberemo 0.5, torej vsakemu času bo dodeljena slučajna spremenljivka, ki je enakomerno zvezno porazdeljena na intervalu [0.5 * čas, 1.5 čas].
+
+Zanimivo je, da kljub temu, da so časi porazdeljeni simetrično, torej bi v povprečju pričakovali enak čas kot za deterministične čase, dobimo trajanja ki so v povprečju malo daljša od 56 dni.
+
+Spreminjajmo sedaj koeficient, od 1 do 0, pri čemer bo pri vrednosti 1 dobimo čas enak prvotnemu, pri vrednosti 0 pa največji možen interval, torej [0, 2 * čas]. Z manjšanjem koeficienta se torej standardni odklon povečuje.
+Poglejmo kako to vpliva na čas trajanja projekta.
+
+Z večanjem standardnega odklona se veča razpršenost trajanja opravil in v povprečju tudi čas trajanja projektov.
+
+
+Nadaljujmo s podobnim primerom, le da sedaj naslednjega opravila ne moremo začeti na isti dan kot smo končali predhodnika. Imamo torej slučajni vektor z diskretnimi in zvezbuni slučajnimi spremenljivkami.
+Funkcija sprejme iste argumente kot prej in kot prej izberemo koeficient 0.5. 
+
+Pričakovano dobimo čas trajanja, ki je daljši od tistega pri enakomerno zvezni porazdelitvi.
+
+
+
+
+
+Poiskusimo sedaj modelirati čase še z binomsko porazdelitvijo.
+Funkcija kot argument sprejme vektor časov trajanja opravil in število poskusov. Število poskusov izberemo kot argument za lažje opazovanje povezave med standardnim odklonom in trajanjem projekta, saj je standardni odklon kot funkcija števila poskusov naraščajoča funkcija.
+Verjetnost uspeha izračunamo kot kvocient prvotnega časa in števila poskusov.
+
+
+
+
+Dodatno lahko dodamo še pogoj, da posameznega opravila ni mogoče končati prej kot v npr. 80% določenega časa.
+
+
