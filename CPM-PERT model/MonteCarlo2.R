@@ -1,3 +1,7 @@
+source("U:/OR/CPM-PERT/CPM-PERT model/Program.R", encoding="UTF-8")
+#install.packages("msm")
+library(msm)
+
 #Eksponentna porazdelitev posameznih opravil
 C <- sapply(1:1000, function(i) trajanje(Opr,Pred,rexp(18, rate =1)))
 hist(C)

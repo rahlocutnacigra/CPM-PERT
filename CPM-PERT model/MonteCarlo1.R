@@ -1,3 +1,7 @@
+source("U:/OR/CPM-PERT/CPM-PERT model/Program.R", encoding="UTF-8")
+#install.packages("msm")
+library(msm)
+
 #V naslednjem delu je čas opravljanja posamezne naloge porazdeljen okrnjeno normalno
 
 B <- sapply(1:1000, function(i) trajanje(Opr,Pred,rtnorm(18,50, 10, lower = 0, upper = 200)))
