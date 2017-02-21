@@ -232,9 +232,11 @@ Sedaj, ko so funkcije definirane, lahko pričnemo s simulacijo z raznimi slučaj
 Za vsako različno simulacijo narišemo tudi histogram z označenim matematičnim upanjem in standardnim odklonom in graf, ki prikazuje kako standardni odklon slučajnih časov trajanja vpliva na povprečno trajanje projektov. Za narisat slednjega si pomagamo z matriko, v katero po stolpcih zapišemo različne simulacije časov trajanja projekta, po vrsticah pa različne standardne odklone.
 
 Za vse simulacije uporabimo enake vektorje opravil, časov trajanja opravil in predhodnikov:
+```{r}
 Opr<-(1:18)
 Pred<-list(c(0),c(1),c(2),c(3),c(4,17),c(5),c(6),c(6),c(2,10),c(1),c(10),c(11),c(12,17),c(13),c(11),c(15,3),c(9,15,16),c(5,13))
 Cas<-c(5,3,4,9,12,3,1,7,5,1,3,6,5,3,4,9,12,3)
+```
 
 
 Začnimo s okrnjeno normalno porazdelitvijo, to je normalna porazdelitev z navzgor ali navzdol omejeno zalogo vrednosti.
