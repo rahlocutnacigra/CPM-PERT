@@ -159,7 +159,6 @@ arrows(u21, 0, x1 = u21+s21, y1 = 0, length = 0.25, angle = 30,
 
 
 #matrika z več ponovitvami(po stolpcih) pri različnih intervalih(po vrsticah)
-w
 
 ####################################################################
 # BINOMSKA, diskretni časi trajanja opravil

@@ -17,6 +17,8 @@ source("U:/OR/CPM-PERT/CPM-PERT model/MonteCarlo1.R", encoding="UTF-8")
 source("U:/OR/CPM-PERT/CPM-PERT model/MonteCarlo2.R", encoding="UTF-8")
 source("U:/OR/CPM-PERT/CPM-PERT model/MonteCarlo3.R", encoding="UTF-8")
 source("U:/OR/CPM-PERT/CPM-PERT model/MonteCarlo4.R", encoding="UTF-8")
+source("U:/OR/CPM-PERT/CPM-PERT model/MonteCarlo5.R", encoding="UTF-8")
+
 ```
 
 
@@ -261,10 +263,10 @@ Sedaj 10000-krat izračunamo čas trajanja projekta in dobimo vektor dolžine 10
 
 ```{r, fig.caption="Histogram porazdelitve časa trajanja projekta pri okrnjeni normalni porazdelitvi",echo=FALSE}
 sim1 <- replicate(100, trajanje(Opr, Pred, simul1(Cas, 1, 0.8)))
-u2 <- mean(sim2) 
-s2 <- sd(sim2)
-mi2 <- min(sim2)
-ma2 <- max(sim2)
+u2 <- mean(sim1) 
+s2 <- sd(sim1)
+mi2 <- min(sim1)
+ma2 <- max(sim1)
 
 #histogram
 hist(sim2, breaks =20, xlab = "Trajanje v dnevih", 
