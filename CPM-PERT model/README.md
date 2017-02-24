@@ -1,2 +1,4 @@
 #Operacijske raziskave
-Avtorja: Andrej Sokoliè in Manca Cör
+Avtorja: Andrej SokoliÄ in Manca CÃ¶r
+
+Povezava do poroÄila: https://htmlpreview.github.io/?https://github.com/rahlocutnacigra/CPM-PERT/blob/master/CPM-PERT%20model/Porocilo.html
