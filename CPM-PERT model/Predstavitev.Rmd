@@ -1,0 +1,152 @@
+---
+title: "CPM-PERT model"
+author: "Andrej Sokolič in Manca Cör"
+date: "28 februar 2017"
+output: ioslides_presentation
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+```{r uvoz, echo=FALSE, include=FALSE, warning=FALSE}
+#source("U:/OR/CPM-PERT/CPM-PERT model/Monte Carlo.R", encoding="UTF-8")
+#source("U:/OR/CPM-PERT/CPM-PERT model/MonteCarlo1.R", encoding="UTF-8")
+#source("U:/OR/CPM-PERT/CPM-PERT model/MonteCarlo2.R", encoding="UTF-8")
+#source("U:/OR/CPM-PERT/CPM-PERT model/MonteCarlo3.R", encoding="UTF-8")
+#source("U:/OR/CPM-PERT/CPM-PERT model/MonteCarlo4.R", encoding="UTF-8")
+#source("U:/OR/CPM-PERT/CPM-PERT model/MonteCarlo5.R", encoding="UTF-8")
+
+```
+
+
+## Predstavitev problema
+
+- Podan imamo projekt, ki je sestavljen iz množice *n* opravil. Za vsako opravilo *o* imamo podano trajanje, pa tudi množico drugih opravil, ki jih moramo opraviti pred začetkom opravila *o*. Izračunati moramo čas trajanja celotnega projekta.
+
+- Projekt si lahko predstavljamo kot usmerjen graf, kjer so opravila vozlišča, povezava od vozlišča *i* do *j* pa pomeni, da je opravilo *i* pogoj za opravilo *j*. Dodamo še začetno in končno vozlišče. Iz začetnega vozlišča gredo povezave v vsa vozlišča, ki nimajo drugih vstopnih povezav, v končega pa gredo povezave iz vseh vozlišč, ki nimajo drugih izstopnih povezav.
+
+## Vhodni podatki
+
+- Vektor opravil: vektor števil od 1 do *n*, če imamo *n* opravil
+- Seznam predhodnikov: seznam vektorjev, kjer vektor na položaju *i* predstavlja množico opravil, ki so pogoj za opravilo *i*. Če opravilo *i* nima pogojev, potem potem je na *i*-tem mestu vektor, ki vsebuje 0.
+- Vektor časov: vektor pozitivnih števil, kjer število na *i*-tem mestu predstavlja trajanje opravila *i*.
+
+## Matrika sosednosti
+Graf lahko zapišemo kot matriko sosednosti. To je matrika sestavljena iz 0 in 1, kjer 1-ka na mestu [*i*,*j*] pove, da imamo povezavo, ki gre iz vozlišča *i* v *j*. 
+
+V prvem delu najinega programa sestaviva matriko sosednosti:
+    
+```{r, eval=FALSE, echo=TRUE }
+Adj<-function(Opr,Pred)
+  z<-length(Opr)+1
+  NO<-c(0, Opr,z)
+  A<-matrika velikosti (z+1)*(z+1)
+  O<-Opr
+  for i in Opr:
+    p<-Pred[i]
+    for j in p:
+      A[j+1,i+1]<-1 
+      O[!O %in% p] 
+```
+
+##Matrika sosednosti
+
+```{r,eval=FALSE, echo=TRUE}     
+for i,j od 1 do z+1:
+  if is.na(A[i,j])
+      A[i,j]<-0
+ 
+for i in 1:z :
+  if sum(A[i,])==0:
+    A[i,z+1]<-1
+
+return(A)
+```
+
+
+##Topološko urejanje
+
+- Ko imamo graf predstavljen v obliki matrike, moramo določiti vrstni red opravljanja opravil. Pri tem si pomagamo z algoritmom za topološko urejanje.
+```{r,eval=FALSE, echo=TRUE}
+top.sort<-function(Opr, Pred)
+  adj<-Adj(Opr,Pred)
+  z<-length(Opr)+1
+  NO<-c(1, Opr+1,z+1)
+  for v in NO:
+    st[v]<-sum(adj[,v])
+  for v in NO:
+    if st[v]==0:
+      Q<-c(Q,v)
+
+```
+
+##Topološko urejanje
+
+```{r,eval=FALSE, echo=TRUE}
+j<-0
+while j<(length(Pred)+2) 
+  for u in Q 
+    remove<-c(u) 
+    Q<-Q[!Q %in% remove] 
+    top.ured[u]<-j 
+    j<-j+1
+    s<-adj[u,] 
+    for v in 1:length(s):
+      if s[v]==1:
+        st[v]<-st[v]-1 
+        if(st[v]==0){
+          Q<-c(Q,v) 
+return(top.ured)
+```
+
+##Topološko urejanje
+- Funkcija za topološko urejanje nam vrne vektor zaporednih številk opravljanja (če imamo na *i*-tem mestu številko *j*, to pomeni da se bo *i* opravljal *j*-ti po vrsti). Bolje je, če imamo vektor, kjer si opravila sledijo v istem zaporedju kot se bodo opravljala. Zato uporabimo naslednjo funkcijo:
+
+```{r,eval=FALSE, echo=TRUE}
+vrstni.red<-function(sez)
+  j<-0
+  zaporedje<-c()
+  while j<length(sez)
+    for i in 1:length(sez)
+      if(sez[i]==j)
+        zaporedje[j]<-i-1
+        j<-j+1
+  return(zaporedje)
+```
+
+##Trajanje
+- Ko enkrat imamo topološko urejanje, moramo le še izračunati čas trajanja projekta. To naredimo s funkcijo trajanje: 
+
+```{r, tidy=FALSE, eval=FALSE, highlight=FALSE }
+vr<-vrstni.red(top.sort(Opr,Pred))
+cas[vr[1]]<-0 #prvo opravilo lahko začnemo v času 0
+for i in 2:(length(vr)-1) #gledamo za opravila, brez končnega - končno opravilo obdelamo na koncu
+#za vsako predhodno opravilo opravila na i-tem mestu poiščemo čas, ko to opravilo lahko začnemo in mu prištejemo čas opravljanja
+  c.pred <- c(0, sapply(Pred[[vr[i]]], function(j) cas[j]+Cas[j]))
+#maksimum teh števil je minimalni čas, ko lahko začnemo opravljati opravilo z zaporedno številko i
+  cas[vr[i]]<-max(c.pred)
+
+#obravnavamo še končno opravilo. Delamo po istem postopku kot prej. Dobimo čas zaključka končnega opravila
+a<-Adj(Opr,Pred)[,length(vr)+1]
+for i in 1:length(a):
+  if a[i]==1:
+    predh<-c(predh,(i-1))
+for j in predh:
+  c1<-c(c1,cas[j]+Cas[j])
+konec<-max(c1)
+return(konec)
+```
+
+##L
+
+```{r cars, echo = TRUE}
+summary(cars)
+```
+
+## Slide with Plot
+
+```{r pressure}
+plot(pressure)
+```
+
