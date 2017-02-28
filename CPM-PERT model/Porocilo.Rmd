@@ -425,7 +425,7 @@ C <- matrix(ncol = pon, nrow = length(a3))
 
 for(c in 1:ncol(C)) {
         i <- 1
-        for(s in a2){
+        for(s in a3){
                 C[i, c] <- trajanje(Opr, Pred, simul21(Cas, s))
                 i<- i+1
         }

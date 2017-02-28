@@ -159,6 +159,25 @@ arrows(u21, 0, x1 = u21+s21, y1 = 0, length = 0.25, angle = 30,
 
 
 #matrika z več ponovitvami(po stolpcih) pri različnih intervalih(po vrsticah)
+a3 <- seq(1, 0, by = -0.02)
+pon <- 100
+C <- matrix(ncol = pon, nrow = length(a3))
+
+for(c in 1:ncol(C)) {
+  i <- 1
+  for(s in a3){
+    C[i, c] <- trajanje(Opr, Pred, simul21(Cas, s))
+    i<- i+1
+  }
+}
+
+
+#matrika z več ponovitvami(po stolpcih) pri različnih standardnih odklonih(po vrsticah)
+
+plot(seq(0, 1, by = 0.02), rowMeans(C), col = "black", bg = "red", pch =21,
+     main ="Povezava med standardnim odklonom opravil in trajanjem projekta", 
+     xlab = "Smer naraščanja standardnega odklona", ylab = "Trajanje projekta")
+
 
 ####################################################################
 # BINOMSKA, diskretni časi trajanja opravil

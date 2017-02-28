@@ -12,7 +12,7 @@ Adj<-function(Opr, Pred){
   O<-Opr
   #za vse sosede vozlišča na ustrezna mesta v matriki napišemo enice:
   for (i in Opr){
-    p<-Pred[i]
+    p<-Pred[[i]]
     for (j in p){
      A[j+1,i+1]<-1
      O[!O %in% p]

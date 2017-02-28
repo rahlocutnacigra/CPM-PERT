@@ -10,12 +10,12 @@ knitr::opts_chunk$set(echo = FALSE)
 ```
 
 ```{r uvoz, echo=FALSE, include=FALSE, warning=FALSE}
-#source("U:/OR/CPM-PERT/CPM-PERT model/Monte Carlo.R", encoding="UTF-8")
-#source("U:/OR/CPM-PERT/CPM-PERT model/MonteCarlo1.R", encoding="UTF-8")
-#source("U:/OR/CPM-PERT/CPM-PERT model/MonteCarlo2.R", encoding="UTF-8")
-#source("U:/OR/CPM-PERT/CPM-PERT model/MonteCarlo3.R", encoding="UTF-8")
-#source("U:/OR/CPM-PERT/CPM-PERT model/MonteCarlo4.R", encoding="UTF-8")
-#source("U:/OR/CPM-PERT/CPM-PERT model/MonteCarlo5.R", encoding="UTF-8")
+source("U:/OR/CPM-PERT/CPM-PERT model/Monte Carlo.R", encoding="UTF-8")
+source("U:/OR/CPM-PERT/CPM-PERT model/MonteCarlo1.R", encoding="UTF-8")
+source("U:/OR/CPM-PERT/CPM-PERT model/MonteCarlo2.R", encoding="UTF-8")
+source("U:/OR/CPM-PERT/CPM-PERT model/MonteCarlo3.R", encoding="UTF-8")
+source("U:/OR/CPM-PERT/CPM-PERT model/MonteCarlo4.R", encoding="UTF-8")
+source("U:/OR/CPM-PERT/CPM-PERT model/MonteCarlo5.R", encoding="UTF-8")
 
 ```
 
@@ -117,26 +117,125 @@ vrstni.red<-function(sez)
 
 ##Trajanje
 - Ko enkrat imamo topološko urejanje, moramo le še izračunati čas trajanja projekta. To naredimo s funkcijo trajanje: 
-
-```{r, tidy=FALSE, eval=FALSE, highlight=FALSE }
-vr<-vrstni.red(top.sort(Opr,Pred))
-cas[vr[1]]<-0 #prvo opravilo lahko začnemo v času 0
-for i in 2:(length(vr)-1) #gledamo za opravila, brez končnega - končno opravilo obdelamo na koncu
-#za vsako predhodno opravilo opravila na i-tem mestu poiščemo čas, ko to opravilo lahko začnemo in mu prištejemo čas opravljanja
-  c.pred <- c(0, sapply(Pred[[vr[i]]], function(j) cas[j]+Cas[j]))
-#maksimum teh števil je minimalni čas, ko lahko začnemo opravljati opravilo z zaporedno številko i
-  cas[vr[i]]<-max(c.pred)
-
-#obravnavamo še končno opravilo. Delamo po istem postopku kot prej. Dobimo čas zaključka končnega opravila
-a<-Adj(Opr,Pred)[,length(vr)+1]
-for i in 1:length(a):
-  if a[i]==1:
-    predh<-c(predh,(i-1))
-for j in predh:
-  c1<-c(c1,cas[j]+Cas[j])
-konec<-max(c1)
-return(konec)
+```{r, eval=FALSE, echo=TRUE }
+trajanje<-function(Opr,Pred,Cas)
+  vr<-vrstni.red(top.sort(Opr,Pred))
+  cas[vr[1]]<-0 
+  for i in 2:(length(vr)-1) 
+    c.pred <- c(0, sapply(Pred[[vr[i]]], function(j) cas[j]+Cas[j]))
+    cas[vr[i]]<-max(c.pred)
+  
+  a<-Adj(Opr,Pred)[,length(vr)+1]
+  for i in 1:length(a):
+    if a[i]==1:
+      predh<-c(predh,(i-1))
+  for j in predh:
+    c1<-c(c1,cas[j]+Cas[j])
+  konec<-max(c1)
+  return(konec)
 ```
+
+##Poskusi z metodo Monte Carlo
+Najprej smo predpostavili, da so vse slučajne spremenljivke v slučajnem vektorju enako porazdeljene. Za vsako od obravnavanih porazdelitev smo najprej naredili simulacijo s 1000 poskusi, nato pa še simulacijo s po 100 poskusi za vsak spremenjen parameter v porazdelitvi, ki je vplival na spremembo disperzije slučajnega vektorja. Najprej smo obravnavali enakomerno zvezno porazdelitev. 
+
+##Enakomerno zvezna porazdelitev
+
+```{r, fig.caption="Histogram porazdelitve časa trajanja projekta pri enakomerno zvezni slučajni spremenljivki",echo=FALSE}
+hist(A,main = paste("Enakomerno zvezna slučajna spremenljivka na inervalu [0,20]"))
+abline(v = mean(A), col = "blue", lwd = 2)
+arrows(mean(A), 0, x1 = mean(A)-sd(A), y1 = 0, length = 0.25, angle = 30,
+       code = 2, col = "red", lwd = 2)
+arrows(mean(A), 0, x1 = mean(A)+sd(A), y1 = 0, length = 0.25, angle = 30,
+       code = 2, col = "red", lwd = 2)
+```
+
+##Enakomerno zvezna porazdelitev
+
+```{r, fig.caption="Odvisnosti med parametri",echo=FALSE}
+par(mfrow=c(2,2))
+plot(O/2,P, main=paste("Odvisnost med pričakovanima vrednostima"),col = "black")
+plot((O^2)/12,R, main=paste("Odvisnost med variancama"),col = "black")
+plot((O^2)/12,P, main=paste("Odvisnost med varianco in pričakovano vrednostjo"),col = "black") 
+```
+
+## Okrnjena normalna porazdelitev
+
+```{r, fig.caption="Histogram porazdelitve časa trajanja projekta pri okrnjenu normalni slučajni spremenljivki",echo=FALSE}
+hist(B,main = paste("Okrnjena normalna slučajna spremenljivka na intervalu [0,300], upanje = 50"))
+abline(v = mean(B), col = "blue", lwd = 2)
+arrows(mean(B), 0, x1 = mean(B)-sd(B), y1 = 0, length = 0.25, angle = 30,
+       code = 2, col = "red", lwd = 2)
+arrows(mean(B), 0, x1 = mean(B)+sd(B), y1 = 0, length = 0.25, angle = 30,
+       code = 2, col = "red", lwd = 2)
+```
+
+## Okrnjena normalna porazdelitev
+
+```{r, fig.caption="Odvisnosti med parametri",echo=FALSE}
+plot(O2,R2, main=paste("Odvisnost med variancama"))
+```
+##Okrnjena normalna porazdelitev
+
+```{r, fig.caption="Odvisnosti med parametri",echo=FALSE}
+plot(O2,P2, main=paste("Odvisnost med varianco opravila in upanjem projekta"))
+```
+
+##Eksponentna porazdelitev
+```{r, fig.caption="Histogram porazdelitve časa trajanja projekta pri eksponentni slučajni spremenljivki",echo=FALSE}
+hist(C,main = paste("Eksponentna slučajna spremenljivka"))
+abline(v = mean(C), col = "blue", lwd = 2)
+arrows(mean(C), 0, x1 = mean(C)-sd(C), y1 = 0, length = 0.25, angle = 30,
+       code = 2, col = "red", lwd = 2)
+arrows(mean(C), 0, x1 = mean(C)+sd(C), y1 = 0, length = 0.25, angle = 30,
+       code = 2, col = "red", lwd = 2)
+```
+
+##Eksponentna porazdelitev
+
+```{r, fig.caption="Odvisnosti med parametri",echo=FALSE}
+par(mfrow=c(2,2))
+plot(1/O1,P1, main="Odvisnost med pričakovanima vrednostima")
+plot(1/O1^2,R1,main= "Odvisnost varianc pri eksponentni porazdelitvi")
+plot(1/O1^2,P1, main= "Odvisnost upanja projekta od variance opravil")
+```
+
+##Porazdelitev Hi-kvadrat
+```{r, fig.caption="Histogram porazdelitve časa trajanja projekta pri hi-kvadrat slučajni spremenljivki",echo=FALSE}
+hist(D, main = paste("Slučajna spremenljivka porazdeljena po zakonu Hi-kvadrat"))
+abline(v = mean(D), col = "blue", lwd = 2)
+arrows(mean(D), 0, x1 = mean(D)-sd(D), y1 = 0, length = 0.25, angle = 30,
+       code = 2, col = "red", lwd = 2)
+arrows(mean(D), 0, x1 = mean(D)+sd(D), y1 = 0, length = 0.25, angle = 30,
+       code = 2, col = "red", lwd = 2)
+```
+
+##Porazdelitev Hi-kvadrat
+```{r, fig.caption="Odvisnosti med parametri",echo=FALSE}
+par(mfrow=c(2,2))
+plot(O4,P4, main="Odvisnost obeh pričakovanih vrednosti")
+plot(2*O4,P4, main ="Odvisnost upanja projekta od variance opravil")
+plot(2*O4,R4, main= "Odvisnost varianc")
+```
+
+##Porazdelitev Gama
+```{r, fig.caption="Histogram porazdelitve časa trajanja projekta pri gama slučajni spremenljivki",echo=FALSE}
+hist(G, main = paste("Slučajna spremenljivka porazdeljena po zakonu Gama"))
+abline(v = mean(G), col = "blue", lwd = 2)
+arrows(mean(G), 0, x1 = mean(G)-sd(G), y1 = 0, length = 0.25, angle = 30,
+       code = 2, col = "red", lwd = 2)
+arrows(mean(G), 0, x1 = mean(G)+sd(G), y1 = 0, length = 0.25, angle = 30,
+       code = 2, col = "red", lwd = 2)
+```
+
+##Porazdelitev Gama
+- Spreminjamo parameter oblike
+```{r, fig.caption="Odvisnosti med parametri",echo=FALSE}
+par(mfrow=c(2,2))
+plot(3/OG,PG, main="Odvisnost obeh pričakovanih vrednosti")
+plot(3/OG^2,RG, main ="Odvisnost upanja projekta od variance opravil")
+plot(3/OG^2,PG, main= "Odvisnost varianc")
+```
+
 
 ## Simulacija z različnimi parametri
 
@@ -173,7 +272,7 @@ simul1 <- function(cas, sd, p) {
 ## Premaknjena normalna porazdelitev
 
 ```{r, echo = FALSE}
-hist(sim1, breaks =20, xlab = "Trajanje v dnevih", 
+hist(sim1, breaks =20, xlab = "Trajanje v dnevih",
      ylab = "Frekvenca", main = "Trajanje projekta")
 abline(v = u1, col = "blue", lwd = 2)
 arrows(u1, 0, x1 = u1-s1, y1 = 0, length = 0.25, angle = 30,
@@ -186,7 +285,7 @@ arrows(u1, 0, x1 = u1+s1, y1 = 0, length = 0.25, angle = 30,
 
 ```{r, echo = FALSE}
 plot(std, rowMeans(A), col = "black", bg = "red", pch =21,
-     main ="Povezava med standardnim odklonom opravil in trajanjem projekta", 
+     main ="Povezava med standardnim odklonom opravil in trajanjem projekta",
      xlab = "Standardni odklon", ylab = "Trajanje projekta")
 ```
 
@@ -211,7 +310,7 @@ simul2 <- function(cas, m) {
 ## Enakomerno zvezna porazdelitev
 
 ```{r, echo = FALSE}
-hist(sim2, breaks =20, xlab = "Trajanje v dnevih", 
+hist(sim2, breaks =20, xlab = "Trajanje v dnevih",
      ylab = "Frekvenca", main = "Trajanje projekta")
 abline(v = u2, col = "blue", lwd = 2)
 arrows(u2, 0, x1 = u2-s2, y1 = 0, length = 0.25, angle = 30,
@@ -224,7 +323,7 @@ arrows(u2, 0, x1 = u2+s2, y1 = 0, length = 0.25, angle = 30,
 
 ```{r, echo = FALSE}
 plot(seq(0, 1, by = 0.02), rowMeans(B), col = "black", bg = "red", pch =21,
-     main ="Povezava med standardnim odklonom opravil in trajanjem projekta", 
+     main ="Povezava med standardnim odklonom opravil in trajanjem projekta",
      xlab = "Smer naraščanja standardnega odklona")
 ```
 
@@ -256,7 +355,7 @@ simul21 <- function(cas, m) {
 ## Enakomerno zvezna porazdelitev 2
 
 ```{r, echo = FALSE}
-hist(sim21, breaks =20, xlab = "Trajanje v dnevih", 
+hist(sim21, breaks =20, xlab = "Trajanje v dnevih",
      ylab = "Frekvenca", main = "Trajanje projekta")
 abline(v = u21, col = "blue", lwd = 2)
 arrows(u21, 0, x1 = u21-s21, y1 = 0, length = 0.25, angle = 30,
@@ -269,7 +368,7 @@ arrows(u21, 0, x1 = u21+s21, y1 = 0, length = 0.25, angle = 30,
 
 ```{r, echo = FALSE}
 plot(seq(0, 1, by = 0.02), rowMeans(C), col = "black", bg = "red", pch =21,
-     main ="Povezava med standardnim odklonom opravil in trajanjem projekta", 
+     main ="Povezava med standardnim odklonom opravil in trajanjem projekta",
      xlab = "Smer naraščanja standardnega odklona", ylab = "Trajanje projekta")
 ```
 
@@ -291,7 +390,7 @@ simul3 <- function(cas, n) {
 ## Binomska porazdelitev
 
 ```{r, echo = FALSE}
-hist(sim3, breaks =20, xlab = "Trajanje v dnevih", 
+hist(sim3, breaks =20, xlab = "Trajanje v dnevih",
      ylab = "Frekvenca", main = "Trajanje projekta")
 abline(v = u3, col = "blue", lwd = 2)
 arrows(u3, 0, x1 = u3-s3, y1 = 0, length = 0.25, angle = 30,
