@@ -138,15 +138,166 @@ konec<-max(c1)
 return(konec)
 ```
 
-##L
+## Simulacija z različnimi parametri
 
-```{r cars, echo = TRUE}
-summary(cars)
+- imamo determinističen vektor časov trajanja opravil
+- definiramo funkcijo, ki danemu vektorju priredi slučajni vektor enake dolžine
+- parametre porazdelitvene funkcije izberemo tako, da je matematično upanje enako determinističnemu času
+
+## Vhodni podatki
+
+Za vse nadaljne simulacije uporabimo enake vektorje opravil, časov trajanja opravil in predhodnikov:
+
+```{r, echo = TRUE}
+Opr<-(1:18)
+Pred<-list(c(0),c(1),c(2),c(3),c(4,17),c(5),c(6),
+           c(6),c(2,10),c(1),c(10), c(11),c(12,17),
+           c(13),c(11),c(15,3),c(9,15,16),c(5,13))
+Cas<-c(5,3,4,9,12,3,1,7,5,1,3,6,5,3,4,9,12,3)
 ```
 
-## Slide with Plot
+## Premaknjena normalna porazdelitev
 
-```{r pressure}
-plot(pressure)
+```{r, echo = TRUE}
+simul1 <- function(cas, sd, p) {
+        sluc <- vector(length = length(cas))
+        i <- 1
+        for(c in cas){
+                sluc[i] <- rtruncnorm(1, c * p, mean = c, sd = sd)
+                i <- i+1
+        }
+        return(sluc)
+}
 ```
+
+## Premaknjena normalna porazdelitev
+
+```{r, echo = FALSE}
+hist(sim1, breaks =20, xlab = "Trajanje v dnevih", 
+     ylab = "Frekvenca", main = "Trajanje projekta")
+abline(v = u1, col = "blue", lwd = 2)
+arrows(u1, 0, x1 = u1-s1, y1 = 0, length = 0.25, angle = 30,
+       code = 2, col = "red", lwd = 2)
+arrows(u1, 0, x1 = u1+s1, y1 = 0, length = 0.25, angle = 30,
+       code = 2, col = "red", lwd = 2)
+```
+
+## Premaknjena normalna porazdelitev
+
+```{r, echo = FALSE}
+plot(std, rowMeans(A), col = "black", bg = "red", pch =21,
+     main ="Povezava med standardnim odklonom opravil in trajanjem projekta", 
+     xlab = "Standardni odklon", ylab = "Trajanje projekta")
+```
+
+
+## Enakomerno zvezna porazdelitev
+
+```{r, echo = TRUE}
+simul2 <- function(cas, m) {
+        if(m>2 | m < 0) {return(FALSE)}
+        sluc <- vector(length = length(cas))
+        n <- max(m, 2-m)
+        m <- min(m, 2-m)
+        i <- 1
+        for(c in cas){
+                sluc[i] <- runif(1, min = m*c, max = n * c)
+                i <- i+1
+        }
+        return(sluc)
+}
+```
+
+## Enakomerno zvezna porazdelitev
+
+```{r, echo = FALSE}
+hist(sim2, breaks =20, xlab = "Trajanje v dnevih", 
+     ylab = "Frekvenca", main = "Trajanje projekta")
+abline(v = u2, col = "blue", lwd = 2)
+arrows(u2, 0, x1 = u2-s2, y1 = 0, length = 0.25, angle = 30,
+       code = 2, col = "red", lwd = 2)
+arrows(u2, 0, x1 = u2+s2, y1 = 0, length = 0.25, angle = 30,
+       code = 2, col = "red", lwd = 2)
+```
+
+## Enakomerno zvezna porazdelitev
+
+```{r, echo = FALSE}
+plot(seq(0, 1, by = 0.02), rowMeans(B), col = "black", bg = "red", pch =21,
+     main ="Povezava med standardnim odklonom opravil in trajanjem projekta", 
+     xlab = "Smer naraščanja standardnega odklona")
+```
+
+## Enakomerno zvezna porazdelitev 2
+
+```{r, echo = TRUE}
+ip <- c()
+for(a in 1:(length(Opr)-1)) {
+        for(b in 1:length(Pred)){
+                if(a %in% Pred[[b]] && !(a %in% ip)) {ip <- c(ip, a)}
+        }
+}
+
+simul21 <- function(cas, m) {
+        if(m>2 | m < 0) {return(FALSE)}
+        sluc <- vector(length = length(cas))
+        n <- max(m, 2-m)
+        m <- min(m, 2-m)
+        i <- 1
+        for(c in cas){
+                sluc[i] <- if(i %in% ip) {ceiling(runif(1, min = m*c, max = n * c))}else{
+                        runif(1, min = m*c, max = n * c)}
+                i <- i+1
+        }
+        return(sluc)
+}
+```
+
+## Enakomerno zvezna porazdelitev 2
+
+```{r, echo = FALSE}
+hist(sim21, breaks =20, xlab = "Trajanje v dnevih", 
+     ylab = "Frekvenca", main = "Trajanje projekta")
+abline(v = u21, col = "blue", lwd = 2)
+arrows(u21, 0, x1 = u21-s21, y1 = 0, length = 0.25, angle = 30,
+       code = 2, col = "red", lwd = 2)
+arrows(u21, 0, x1 = u21+s21, y1 = 0, length = 0.25, angle = 30,
+       code = 2, col = "red", lwd = 2)
+```
+
+## Enakomerno zvezna porazdelitev 2
+
+```{r, echo = FALSE}
+plot(seq(0, 1, by = 0.02), rowMeans(C), col = "black", bg = "red", pch =21,
+     main ="Povezava med standardnim odklonom opravil in trajanjem projekta", 
+     xlab = "Smer naraščanja standardnega odklona", ylab = "Trajanje projekta")
+```
+
+## Binomska porazdelitev
+
+```{r, echo = TRUE}
+simul3 <- function(cas, n) {
+        sluc <- vector(length = length(cas))
+        i <- 1
+        for(c in cas){
+                p <- c / n
+                sluc[i] <- max(rbinom(1, n, p), round(0.8*c))
+                i <- i+1
+        }
+        return(sluc)
+}
+```
+
+## Binomska porazdelitev
+
+```{r, echo = FALSE}
+hist(sim3, breaks =20, xlab = "Trajanje v dnevih", 
+     ylab = "Frekvenca", main = "Trajanje projekta")
+abline(v = u3, col = "blue", lwd = 2)
+arrows(u3, 0, x1 = u3-s3, y1 = 0, length = 0.25, angle = 30,
+       code = 2, col = "red", lwd = 2)
+arrows(u3, 0, x1 = u3+s3, y1 = 0, length = 0.25, angle = 30,
+       code = 2, col = "red", lwd = 2)
+```
+
 
