@@ -141,7 +141,7 @@ Najprej smo predpostavili, da so vse slučajne spremenljivke v slučajnem vektor
 ##Enakomerno zvezna porazdelitev
 
 ```{r, fig.caption="Histogram porazdelitve časa trajanja projekta pri enakomerno zvezni slučajni spremenljivki",echo=FALSE}
-hist(A,main = paste("Enakomerno zvezna slučajna spremenljivka na inervalu [0,20]"))
+hist(A,main = paste("Enakomerno zvezna slučajna spremenljivka na inervalu [0,20]"), xlab="Trajanje", ylab="Pogostost")
 abline(v = mean(A), col = "blue", lwd = 2)
 arrows(mean(A), 0, x1 = mean(A)-sd(A), y1 = 0, length = 0.25, angle = 30,
        code = 2, col = "red", lwd = 2)
@@ -153,15 +153,15 @@ arrows(mean(A), 0, x1 = mean(A)+sd(A), y1 = 0, length = 0.25, angle = 30,
 
 ```{r, fig.caption="Odvisnosti med parametri",echo=FALSE}
 par(mfrow=c(2,2))
-plot(O/2,P, main=paste("Odvisnost med pričakovanima vrednostima"),col = "black")
-plot((O^2)/12,R, main=paste("Odvisnost med variancama"),col = "black")
-plot((O^2)/12,P, main=paste("Odvisnost med varianco in pričakovano vrednostjo"),col = "black") 
+plot(O/2,P, main=paste("Odvisnost med pričakovanima vrednostima"),col = "black", xlab = "Pričakovano trajanje opravila", ylab = "Pričakovano trajanje projekta")
+plot((O^2)/12,R, main=paste("Odvisnost med variancama"),col = "black", xlab = "Varianca trajanja opravila", ylab = "Varianca trajanja projekta")
+plot((O^2)/12,P, main=paste("Odvisnost med varianco in pričakovano vrednostjo"),col = "black", xlab = "Varianca trajanja opravila", ylab = "Pričakovano trajanje projekta") 
 ```
 
 ## Okrnjena normalna porazdelitev
 
 ```{r, fig.caption="Histogram porazdelitve časa trajanja projekta pri okrnjenu normalni slučajni spremenljivki",echo=FALSE}
-hist(B,main = paste("Okrnjena normalna slučajna spremenljivka na intervalu [0,300], upanje = 50"))
+hist(B,main = paste("Okrnjena normalna slučajna spremenljivka na intervalu [0,300], upanje = 50"),xlab="Trajanje", ylab="Pogostost")
 abline(v = mean(B), col = "blue", lwd = 2)
 arrows(mean(B), 0, x1 = mean(B)-sd(B), y1 = 0, length = 0.25, angle = 30,
        code = 2, col = "red", lwd = 2)
@@ -172,17 +172,18 @@ arrows(mean(B), 0, x1 = mean(B)+sd(B), y1 = 0, length = 0.25, angle = 30,
 ## Okrnjena normalna porazdelitev
 
 ```{r, fig.caption="Odvisnosti med parametri",echo=FALSE}
-plot(O2,R2, main=paste("Odvisnost med variancama"))
+plot(O2,R2, main=paste("Odvisnost med variancama"), xlab = "Varianca trajanja opravila", ylab = "Varianca trajanja projekta")
 ```
+
 ##Okrnjena normalna porazdelitev
 
 ```{r, fig.caption="Odvisnosti med parametri",echo=FALSE}
-plot(O2,P2, main=paste("Odvisnost med varianco opravila in upanjem projekta"))
+plot(O2,P2, main=paste("Odvisnost med varianco opravila in upanjem projekta"), xlab = "Varianca trajanja opravila", ylab = "Pričakovano trajanje projekta")
 ```
 
 ##Eksponentna porazdelitev
 ```{r, fig.caption="Histogram porazdelitve časa trajanja projekta pri eksponentni slučajni spremenljivki",echo=FALSE}
-hist(C,main = paste("Eksponentna slučajna spremenljivka"))
+hist(C,main = paste("Eksponentna slučajna spremenljivka"),xlab="Trajanje", ylab="Pogostost")
 abline(v = mean(C), col = "blue", lwd = 2)
 arrows(mean(C), 0, x1 = mean(C)-sd(C), y1 = 0, length = 0.25, angle = 30,
        code = 2, col = "red", lwd = 2)
@@ -194,14 +195,14 @@ arrows(mean(C), 0, x1 = mean(C)+sd(C), y1 = 0, length = 0.25, angle = 30,
 
 ```{r, fig.caption="Odvisnosti med parametri",echo=FALSE}
 par(mfrow=c(2,2))
-plot(1/O1,P1, main="Odvisnost med pričakovanima vrednostima")
-plot(1/O1^2,R1,main= "Odvisnost varianc pri eksponentni porazdelitvi")
-plot(1/O1^2,P1, main= "Odvisnost upanja projekta od variance opravil")
+plot(1/O1,P1, main="Odvisnost med pričakovanima vrednostima", xlab = "Pričakovano trajanje opravila", ylab = "Pričakovano trajanje projekta")
+plot(1/O1^2,R1,main= "Odvisnost varianc pri eksponentni porazdelitvi", xlab = "Varianca trajanja opravila", ylab = "Varianca trajanja projekta")
+plot(1/O1^2,P1, main= "Odvisnost upanja projekta od variance opravil", xlab = "Varianca trajanja opravila", ylab = "Pričakovano trajanje projekta")
 ```
 
 ##Porazdelitev Hi-kvadrat
 ```{r, fig.caption="Histogram porazdelitve časa trajanja projekta pri hi-kvadrat slučajni spremenljivki",echo=FALSE}
-hist(D, main = paste("Slučajna spremenljivka porazdeljena po zakonu Hi-kvadrat"))
+hist(D, main = paste("Slučajna spremenljivka porazdeljena po zakonu Hi-kvadrat"),xlab="Trajanje", ylab="Pogostost")
 abline(v = mean(D), col = "blue", lwd = 2)
 arrows(mean(D), 0, x1 = mean(D)-sd(D), y1 = 0, length = 0.25, angle = 30,
        code = 2, col = "red", lwd = 2)
@@ -212,14 +213,14 @@ arrows(mean(D), 0, x1 = mean(D)+sd(D), y1 = 0, length = 0.25, angle = 30,
 ##Porazdelitev Hi-kvadrat
 ```{r, fig.caption="Odvisnosti med parametri",echo=FALSE}
 par(mfrow=c(2,2))
-plot(O4,P4, main="Odvisnost obeh pričakovanih vrednosti")
-plot(2*O4,P4, main ="Odvisnost upanja projekta od variance opravil")
-plot(2*O4,R4, main= "Odvisnost varianc")
+plot(O4,P4, main="Odvisnost obeh pričakovanih vrednosti", xlab = "Pričakovano trajanje opravila", ylab = "Pričakovano trajanje projekta")
+plot(2*O4,P4, main ="Odvisnost upanja projekta od variance opravil", xlab = "Varianca trajanja opravila", ylab = "Pričakovano trajanje projekta")
+plot(2*O4,R4, main= "Odvisnost varianc", xlab = "Varianca trajanja opravila", ylab = "Varianca trajanja projekta")
 ```
 
 ##Porazdelitev Gama
 ```{r, fig.caption="Histogram porazdelitve časa trajanja projekta pri gama slučajni spremenljivki",echo=FALSE}
-hist(G, main = paste("Slučajna spremenljivka porazdeljena po zakonu Gama"))
+hist(G, main = paste("Slučajna spremenljivka porazdeljena po zakonu Gama"),xlab="Trajanje", ylab="Pogostost")
 abline(v = mean(G), col = "blue", lwd = 2)
 arrows(mean(G), 0, x1 = mean(G)-sd(G), y1 = 0, length = 0.25, angle = 30,
        code = 2, col = "red", lwd = 2)
@@ -231,9 +232,9 @@ arrows(mean(G), 0, x1 = mean(G)+sd(G), y1 = 0, length = 0.25, angle = 30,
 - Spreminjamo parameter oblike
 ```{r, fig.caption="Odvisnosti med parametri",echo=FALSE}
 par(mfrow=c(2,2))
-plot(3/OG,PG, main="Odvisnost obeh pričakovanih vrednosti")
-plot(3/OG^2,RG, main ="Odvisnost upanja projekta od variance opravil")
-plot(3/OG^2,PG, main= "Odvisnost varianc")
+plot(3/OG,PG, main="Odvisnost obeh pričakovanih vrednosti", xlab = "Pričakovano trajanje opravila", ylab = "Pričakovano trajanje projekta")
+plot(3/OG^2,RG, main ="Odvisnost upanja projekta od variance opravil", xlab = "Varianca trajanja opravila", ylab = "Pričakovano trajanje projekta")
+plot(3/OG^2,PG, main= "Odvisnost varianc", xlab = "Varianca trajanja opravila", ylab = "Varianca trajanja projekta")
 ```
 
 
